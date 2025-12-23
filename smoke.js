@@ -24,5 +24,9 @@ export default function () {
   //3/ Validate response
   check(res, {
     'login succeeded': (r) => r.status === 200,
+    ' Got access token': (r) => r.json().access_token.length > 0,
   });
+
+  //4. Simulate user think time
+  sleep(1);
 }
