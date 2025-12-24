@@ -1,0 +1,4 @@
+.env
+*.json
+results/
+node_modules/

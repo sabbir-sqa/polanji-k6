@@ -1,4 +1,4 @@
-//utils/auth.js
+// utils/auth.js
 import http from 'k6/http';
 import { check, fail } from 'k6';
 
@@ -12,39 +12,36 @@ export function login(email, password) {
       'Content-Type': 'application/x-www-form-urlencoded',
     },
   };
+
   const res = http.post(url, payload, params);
 
-  //!Check HTTP status first
+  // Check HTTP status
   if (res.status !== 200) {
-    console.error(`Login failed: ${res.status} ${res.status_text}`);
-    console.error(`Response body: ${res.body}`);
-    fail('Login endpoint returned non-200 status');
+    console.error(`❌ Login failed: ${res.status} ${res.statusText}`);
+    console.error('Response body:', res.body.substring(0, 500)); // avoid huge logs
+    fail(`Login failed with status ${res.status}`);
   }
 
-  //!Safely parse JSON
+  // Parse JSON safely
   let data;
   try {
     data = res.json();
   } catch (e) {
-    console.error('Failed to parse JSON from /log_in response');
-    console.error('Raw body:', res.body);
-    fail('Invalid JSON response from /log_in');
+    console.error('❌ Invalid JSON in login response');
+    console.error('Raw response:', res.body);
+    fail('Login response is not valid JSON');
   }
 
-  //!Validate expected fields
+  // Validate structure
   if (!data.access_token) {
-    fail('access_token missing in login response');
+    fail('Missing access_token in login response');
   }
-  if (!data.user || !data.user.id) {
-    console.error(
-      'Missing or incomplete user object in login response:',
-      data.user
-    );
-    fail('User object missing or has no "id" field');
+  if (!data.user || typeof data.user.id !== 'number') {
+    console.error('⚠️ User object missing or invalid:', data.user);
+    fail('User ID not found in login response');
   }
 
-  console.log(`Logged in as user ID: ${data.user.id}`);
-
+  console.log(`✅ Login successful. User ID: ${data.user.id}`);
   return {
     token: data.access_token,
     userId: data.user.id,
