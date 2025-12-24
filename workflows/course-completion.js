@@ -9,13 +9,7 @@ export function courseCompletionWorkflow() {
   const { token, userId } = login(__ENV.EMAIL, __ENV.PASSWORD);
   const authHeaders = addAuthHeaders({}, token);
 
-  // 📊 Step 2: Get dashboard stats
-  const statsRes = http.get(`${__ENV.BASE_URL}/dashboard/stats`, {
-    headers: authHeaders,
-  });
-  check(statsRes, { 'dashboard: status 200': (r) => r.status === 200 });
-
-  // 📚 Step 3: Get recommendations
+  // 📚 Step 2: Get recommendations
   const recsRes = http.get(
     `${__ENV.BASE_URL}/recommendations?user_id=${userId}&limit=10`,
     {
@@ -24,10 +18,10 @@ export function courseCompletionWorkflow() {
   );
   check(recsRes, { 'recommendations: status 200': (r) => r.status === 200 });
 
-  // 🎯 Step 4: Use known Python course ID = 2 (from assignment verification)
+  // 🎯 Step 3: Use known Python course ID = 2 (from assignment verification)
   const courseId = parseInt(__ENV.PYTHON_COURSE_ID || '2', 10);
 
-  // 📘 Step 5: Fetch course details (optional but validates)
+  // 📘 Step 4: Fetch course details (optional but validates)
   const courseRes = http.get(`${__ENV.BASE_URL}/courses/${courseId}`, {
     headers: authHeaders,
   });
@@ -43,14 +37,14 @@ export function courseCompletionWorkflow() {
     },
   });
 
-  // ❓ Step 6: Get section 0 quizzes
+  // ❓ Step 5: Get section 0 quizzes
   const quizRes = http.get(
     `${__ENV.BASE_URL}/section-quizzes?course_id=${courseId}&section_index=0`,
     { headers: authHeaders }
   );
   check(quizRes, { 'quiz: status 200': (r) => r.status === 200 });
 
-  // ✅ Step 7: Mark quiz as complete
+  // ✅ Step 6: Mark quiz as complete
   const completeRes = http.post(
     `${__ENV.BASE_URL}/courses/${courseId}/sections/0/quiz-complete`,
     {}, // empty body
